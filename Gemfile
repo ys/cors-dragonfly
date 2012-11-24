@@ -12,3 +12,4 @@ gem 'nokogiri'
 gem 'heroku'
 
 gem 'puma'
+gem 'foreman'

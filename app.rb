@@ -16,7 +16,7 @@ app = Dragonfly[:images]
 
 app.define_macro_on_include(Mongoid::Document, :image_accessor)
 
-Mongoid.load!('mongoid.yml')
+Mongoid.load!('mongoid.yml', ENV['RACK_ENV'] )
 
 app.configure_with(:imagemagick) do |c|
   c.url_format = '/images/:job/:basename.:format'
