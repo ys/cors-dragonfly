@@ -48,6 +48,8 @@ GEM
     netrc (0.7.7)
     nokogiri (1.5.5)
     origin (1.0.9)
+    puma (1.6.3)
+      rack (~> 1.2)
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -79,6 +81,7 @@ DEPENDENCIES
   heroku
   mongoid
   nokogiri
+  puma
   rack-cache
   shotgun
   sinatra

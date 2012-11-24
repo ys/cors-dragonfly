@@ -10,3 +10,5 @@ gem 'dragonfly', '~>0.9.12'
 gem 'nokogiri'
 
 gem 'heroku'
+
+gem 'puma'
