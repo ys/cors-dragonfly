@@ -1,0 +1,7 @@
+doctype html
+html
+  head
+    title= @image.name
+  body
+    img src="#{@image.remote_url}"
+    img src="#{@image.thumb("100x100#").url}

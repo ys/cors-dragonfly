@@ -1,0 +1,40 @@
+doctype html
+html
+  head
+    title Sinatra With Slim
+    script type="text/javascript" src="/js/jquery.js"
+    script type="text/javascript" src="/js/jquery.ui.widget.js"
+    script type="text/javascript" src="/js/jquery.iframe-transport.js"
+    script type="text/javascript" src="/js/jquery.fileupload.js"
+    javascript:
+      $(function() {
+        $('#fileupload').fileupload({
+          url: 'https://#{BUCKET}.s3.amazonaws.com/',
+          type: 'POST',
+          autoUpload: true
+        });
+        $('#fileupload').bind('fileuploadadd', function (e, data) {
+          console.log(e, data);
+          data.formData = {
+            key: "#{SecureRandom.uuid}/" + data.files[0].name,
+            "Content-Type": data.files[0].type,
+            AWSAccessKeyId: "#{ACCESS_KEY_ID}",
+            acl: "public-read",
+            policy: "#{policy}",
+            signature: "#{signature}",
+            success_action_status: "201"
+          }
+        });
+        $('#fileupload').bind('fileuploaddone', function (e, data) {
+          console.log(e, data);
+          $('#response input').val(data.jqXHR.responseText);
+          $('#response').submit();
+        })
+      });
+  body
+    form action="/" method="post" enctype="multipart/form-data"
+      input type="file" id="fileupload" name="file"
+      input type='submit'
+
+    form action="/" method="post" id="response"
+      input name="image"
