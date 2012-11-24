@@ -20,6 +20,29 @@ Mongoid.load!('mongoid.yml', ENV['RACK_ENV'] )
 
 app.configure_with(:imagemagick) do |c|
   c.url_format = '/images/:job/:basename.:format'
+  # Override the .url method...
+  c.define_url do |app, job, opts|
+    thumb = Thumb.where(job: job.serialize).first
+    # If (fetch 'some_uid' then resize to '40x40') has been stored already, give the datastore's remote url ...
+    if thumb
+      app.datastore.url_for(thumb.uid)
+    # ...otherwise give the local Dragonfly server url
+    else
+      app.server.url_for(job)
+    end
+  end
+
+  # Before serving from the local Dragonfly server...
+  c.server.before_serve do |job, env|
+    # ...store the thumbnail in the datastore...
+    uid = job.store
+
+    # ...keep track of its uid so next time we can serve directly from the datastore
+    Thumb.create!(
+      :uid => uid,
+      :job => job.serialize     # 'BAhbBls...' - holds all the job info
+    )                           # e.g. fetch 'some_uid' then resize to '40x40'
+  end
 end
 
 app.datastore = Dragonfly::DataStorage::S3DataStore.new
@@ -40,8 +63,19 @@ class Picture
 
   field :image_uid
   field :image_name
+  field :base_path
 
   image_accessor :image
+end
+
+class Thumb
+  include Mongoid::Document
+
+  field :uid
+  field :job
+end
+
+get '/favicon.ico' do
 end
 
 get '/:image_id' do |image_id|
@@ -56,10 +90,14 @@ end
 get '/:image_id/thumb' do |image_id|
   Picture.find(image_id).image.thumb("100x100#").to_response(env)
 end
-
+get '/:image_id/thumb/:format' do |image_id, format|
+  Picture.find(image_id).image.thumb("#{format}#").to_response(env)
+end
 get '/' do
   slim :index
 end
+
+
 
 post '/' do
   if params[:image]
